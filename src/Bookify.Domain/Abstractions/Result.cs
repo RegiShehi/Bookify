@@ -4,14 +4,18 @@ namespace Bookify.Domain.Abstractions;
 
 public class Result
 {
-    protected internal Result(bool isSuccess, Error error)
+    protected Result(bool isSuccess, Error error)
     {
-        if (isSuccess && error != Error.None) throw new InvalidOperationException();
-
-        if (!isSuccess && error == Error.None) throw new InvalidOperationException();
-
-        IsSuccess = isSuccess;
-        Error = error;
+        switch (isSuccess)
+        {
+            case true when error != Error.None:
+            case false when error == Error.None:
+                throw new InvalidOperationException();
+            default:
+                IsSuccess = isSuccess;
+                Error = error;
+                break;
+        }
     }
 
     public bool IsSuccess { get; }
