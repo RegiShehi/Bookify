@@ -7,6 +7,13 @@
       dockerfile: src/Bookify.Api/Dockerfile
     depends_on:
       - bookify-db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    #      - ASPNETCORE_HTTP_PORTS=7000
+    #      - ASPNETCORE_HTTPS_PORTS=7001
+    ports:
+      - "7000:7000"
+      - "7001:7001"
 
   bookify-db:
     image: postgres:17.2
@@ -18,4 +25,4 @@
     volumes:
       - ./.containers/database:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - "5432:5432"

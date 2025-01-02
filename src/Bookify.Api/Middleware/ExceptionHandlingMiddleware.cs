@@ -1,73 +1,71 @@
 ﻿using Bookify.Application.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
-
 namespace Bookify.Api.Middleware;
 
-public class ExceptionHandlingMiddleware
+public class ExceptionHandlingMiddleware(
+    RequestDelegate next,
+    ILogger<ExceptionHandlingMiddleware> logger)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-
-    public ExceptionHandlingMiddleware(
-        RequestDelegate next,
-        ILogger<ExceptionHandlingMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
-
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
-            await _next(context);
+            await next(context);
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Exception occurred: {Message}", exception.Message);
+            logger.LogError(exception, "Exception occurred: {Message}", exception.Message);
 
-            var exceptionDetails = GetExceptionDetails(exception);
+            context.Response.ContentType = "application/json";
 
-            var problemDetails = new ProblemDetails
+            if (exception is ValidationException validationException)
             {
-                Status = exceptionDetails.Status,
-                Type = exceptionDetails.Type,
-                Title = exceptionDetails.Title,
-                Detail = exceptionDetails.Detail
-            };
+                var validationProblemDetails = CreateValidationProblemDetails(validationException);
 
-            if (exceptionDetails.Errors is not null) problemDetails.Extensions["errors"] = exceptionDetails.Errors;
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await context.Response.WriteAsJsonAsync(validationProblemDetails);
+            }
+            else
+            {
+                var problemDetails = new ProblemDetails
+                {
+                    Status = StatusCodes.Status500InternalServerError,
+                    Type = "ServerError",
+                    Title = "Server Error",
+                    Detail = "An unexpected error has occurred."
+                };
 
-            context.Response.StatusCode = exceptionDetails.Status;
-
-            await context.Response.WriteAsJsonAsync(problemDetails);
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                await context.Response.WriteAsJsonAsync(problemDetails);
+            }
         }
     }
 
-    private static ExceptionDetails GetExceptionDetails(Exception exception)
+    private ValidationProblemDetails CreateValidationProblemDetails(ValidationException validationException)
     {
-        return exception switch
-        {
-            ValidationException validationException => new ExceptionDetails(
-                StatusCodes.Status400BadRequest,
-                "ValidationFailure",
-                "Validation error",
-                "One or more validation errors has occurred",
-                validationException.Errors),
-            _ => new ExceptionDetails(
-                StatusCodes.Status500InternalServerError,
-                "ServerError",
-                "Server error",
-                "An unexpected error has occurred",
-                null)
-        };
-    }
+        var validationErrors = new Dictionary<string, string[]>();
 
-    private record ExceptionDetails(
-        int Status,
-        string Type,
-        string Title,
-        string Detail,
-        IEnumerable<object>? Errors);
+        foreach (var error in validationException.Errors)
+        {
+            if (validationErrors.ContainsKey(error.PropertyName))
+            {
+                var errorList = validationErrors[error.PropertyName].ToList();
+                errorList.Add(error.ErrorMessage);
+                validationErrors[error.PropertyName] = errorList.ToArray();
+            }
+            else
+                validationErrors.Add(error.PropertyName, [error.ErrorMessage]);
+        }
+
+        var validationProblemDetails = new ValidationProblemDetails(validationErrors)
+        {
+            Status = StatusCodes.Status400BadRequest,
+            Type = "ValidationFailure",
+            Title = "Validation Error",
+            Detail = "One or more validation errors have occurred."
+        };
+
+        return validationProblemDetails;
+    }
 }
