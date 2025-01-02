@@ -2,11 +2,11 @@
   bookify.api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=7000
-      - ASPNETCORE_HTTPS_PORTS=7001
+      - ASPNETCORE_HTTP_PORTS=80
+    #      - ASPNETCORE_HTTPS_PORTS=443
     ports:
-      - "7000:7000"
-      - "7001:7001"
+      - "7000:80"
+    #      - "7001:443"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro

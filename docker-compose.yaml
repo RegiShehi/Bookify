@@ -9,11 +9,11 @@
       - bookify-db
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-    #      - ASPNETCORE_HTTP_PORTS=7000
-    #      - ASPNETCORE_HTTPS_PORTS=7001
+      - ASPNETCORE_URLS=http://+:80
+    #      - ASPNETCORE_URLS=https://+:443
     ports:
-      - "7000:7000"
-      - "7001:7001"
+      - "7000:80"
+  #      - "7001:443"
 
   bookify-db:
     image: postgres:17.2
