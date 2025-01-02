@@ -1,7 +1,17 @@
 ﻿services:
+  bookify.db:
+    image: postgres:17.2
+    container_name: bookify.db
+    environment:
+      POSTGRES_PASSWORD: postgrespw
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  
   bookify.api:
     image: bookify.api
-    container_name: Bookify.Api
+    container_name: bookify.api
     build:
       context: .
       dockerfile: src/Bookify.Api/Dockerfile
@@ -10,20 +20,9 @@
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=bookify.db:5432;User Id=postgres;Password=postgrespw;Database=bookify
     ports:
       - "7000:80"
-
-  bookify.db:
-    image: postgres:17.2
-    container_name: bookify.db
-    environment:
-      - POSTGRES_DB=bookify
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    volumes:
-      - ./.containers/database:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
   
   bookify.idp:
     image: quay.io/keycloak/keycloak:26.0
@@ -33,7 +32,10 @@
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
     volumes:
-      - ./.containers/identity:/opt/keycloak/data
+      - identitydata:/opt/keycloak/data
       - ./.files/bookify-realm-export.json:/opt/keycloak/data/import/realm.json
     ports:
       - "18080:8080"
+volumes:
+  pgdata:
+  identitydata:
