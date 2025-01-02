@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bookify.Api.Controllers.Apartments;
 
-// [Authorize]
+[Authorize]
 [Route("api/apartments")]
 [ApiController]
 public class ApartmentsController(ISender sender) : ControllerBase
@@ -18,6 +18,6 @@ public class ApartmentsController(ISender sender) : ControllerBase
 
         var result = await sender.Send(query, cancellationToken);
 
-        return Ok("bbbbb");
+        return Ok(result.Value);
     }
 }
