@@ -1,7 +1,7 @@
 ﻿services:
   bookify.api:
     image: bookify.api
-    container_name: bookify.api
+    container_name: Bookify.Api
     build:
       context: .
       dockerfile: src/Bookify.Api/Dockerfile
@@ -10,7 +10,7 @@
 
   bookify-db:
     image: postgres:17.2
-    container_name: bookify.db
+    container_name: Bookify.Db
     environment:
       - POSTGRES_DB=bookify
       - POSTGRES_USER=postgres
@@ -18,4 +18,4 @@
     volumes:
       - ./.containers/database:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - 5432:5432
