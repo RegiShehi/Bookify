@@ -26,27 +26,21 @@ public static class DependencyInjection
     {
         services.AddTransient<IDateTimeProvider, DateTimeProvider>();
         services.AddTransient<IEmailService, EmailService>();
-        services.AddScoped<IUserContext, UserContext>();
 
         AddPersistence(services, configuration);
 
-        AddJwtAuthentication(services, configuration);
-
-        AddKeycloakAuthentication(services, configuration);
+        AddAuthentication(services, configuration);
 
         return services;
     }
 
-    private static void AddJwtAuthentication(IServiceCollection services, IConfiguration configuration)
+    private static void AddAuthentication(IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
         services.ConfigureOptions<JwtBearerOptionsSetup>();
-    }
 
-    private static void AddKeycloakAuthentication(IServiceCollection services, IConfiguration configuration)
-    {
         services.Configure<KeycloakOptions>(configuration.GetSection("Keycloak"));
 
         services.AddTransient<AdminAuthorizationDelegatingHandler>();
@@ -64,6 +58,9 @@ public static class DependencyInjection
 
             httpClient.BaseAddress = new Uri(keycloakOptions.TokenUrl);
         }).AddHttpMessageHandler<AdminAuthorizationDelegatingHandler>();
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<IUserContext, UserContext>();
     }
 
     private static void AddPersistence(IServiceCollection services, IConfiguration configuration)
