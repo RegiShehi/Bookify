@@ -3,6 +3,8 @@
 public sealed class Role
 {
     public static readonly Role Registered = new(1, "Registered");
+
+    private readonly List<User> _users = [];
     public int Id { get; init; }
     public string Name { get; set; }
 
@@ -12,5 +14,5 @@ public sealed class Role
         Name = name;
     }
 
-    public ICollection<User> Users { get; init; } = new List<User>();
+    public IReadOnlyCollection<User> Users => _users.ToList();
 }
