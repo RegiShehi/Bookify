@@ -31,7 +31,7 @@ public static class DependencyInjection
 
         AddJwtAuthentication(services, configuration);
 
-        AddKeycloak(services, configuration);
+        AddKeycloakAuthentication(services, configuration);
 
         return services;
     }
@@ -44,16 +44,24 @@ public static class DependencyInjection
         services.ConfigureOptions<JwtBearerOptionsSetup>();
     }
 
-    private static void AddKeycloak(IServiceCollection services, IConfiguration configuration)
+    private static void AddKeycloakAuthentication(IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<KeycloakOptions>(configuration.GetSection("Keycloak"));
 
         services.AddTransient<AdminAuthorizationDelegatingHandler>();
+
         services.AddHttpClient<IAuthenticationService, AuthenticationService>((serviceProvider, httpClient) =>
         {
             var keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
 
             httpClient.BaseAddress = new Uri(keycloakOptions.AdminUrl);
+        }).AddHttpMessageHandler<AdminAuthorizationDelegatingHandler>();
+
+        services.AddHttpClient<IJwtService, JwtService>((serviceProvider, httpClient) =>
+        {
+            var keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
+
+            httpClient.BaseAddress = new Uri(keycloakOptions.TokenUrl);
         }).AddHttpMessageHandler<AdminAuthorizationDelegatingHandler>();
     }
 
