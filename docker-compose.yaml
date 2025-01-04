@@ -36,6 +36,16 @@
       - ./.files/bookify-realm-export.json:/opt/keycloak/data/import/realm.json
     ports:
       - "18080:8080"
+        
+  bookify-seq:
+    image: datalust/seq:2024.3
+    container_name: bookify-seq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "5341:5341"
+      - "8081:80"
+
 volumes:
   pgdata:
   identitydata:
