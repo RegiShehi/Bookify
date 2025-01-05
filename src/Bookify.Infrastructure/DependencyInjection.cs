@@ -1,4 +1,5 @@
-﻿using Bookify.Application.Abstractions.Caching;
+﻿using Asp.Versioning;
+using Bookify.Application.Abstractions.Caching;
 using Bookify.Application.Abstractions.Clock;
 using Bookify.Application.Abstractions.Data;
 using Bookify.Application.Abstractions.Email;
@@ -30,7 +31,7 @@ namespace Bookify.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddTransient<IDateTimeProvider, DateTimeProvider>();
         services.AddTransient<IEmailService, EmailService>();
@@ -45,7 +46,7 @@ public static class DependencyInjection
 
         AddHealthChecks(services, configuration);
 
-        return services;
+        AddApiVersioning(services);
     }
 
     private static void AddAuthentication(IServiceCollection services, IConfiguration configuration)
@@ -110,7 +111,6 @@ public static class DependencyInjection
         SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
     }
 
-
     private static void AddCaching(IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("Cache") ??
@@ -127,5 +127,21 @@ public static class DependencyInjection
             .AddNpgSql(configuration.GetConnectionString("Database")!)
             .AddRedis(configuration.GetConnectionString("Cache")!)
             .AddUrlGroup(new Uri(configuration["KeyCloak:BaseUrl"]!), HttpMethod.Get, "keycloak");
+    }
+
+    private static void AddApiVersioning(IServiceCollection services)
+    {
+        services.AddApiVersioning(options =>
+            {
+                options.DefaultApiVersion = new ApiVersion(1);
+                options.ReportApiVersions = true;
+                options.ApiVersionReader = new UrlSegmentApiVersionReader();
+            })
+            .AddMvc()
+            .AddApiExplorer(options =>
+            {
+                options.GroupNameFormat = "'v'V";
+                options.SubstituteApiVersionInUrl = true;
+            });
     }
 }
