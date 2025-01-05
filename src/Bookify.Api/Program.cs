@@ -58,6 +58,16 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Configure minimal APIs with versioning
+// var apiVersionSet = app.NewApiVersionSet()
+//     .HasApiVersion(new ApiVersion(1))
+//     .ReportApiVersions()
+//     .Build();
+//
+// var routeGroupBuilder = app.MapGroup("api/v{version:apiVersion}").WithApiVersionSet(apiVersionSet);
+//
+// routeGroupBuilder.MapBookingEndpoints();
+
 app.MapHealthChecks("health", new HealthCheckOptions
 {
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
