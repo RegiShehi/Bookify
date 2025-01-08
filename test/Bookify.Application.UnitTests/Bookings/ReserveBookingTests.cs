@@ -27,7 +27,6 @@ public class ReserveBookingTests
     private readonly IApartmentRepository _apartmentRepositoryMock;
     private readonly IBookingRepository _bookingRepositoryMock;
     private readonly IUnitOfWork _unitOfWorkMock;
-    private readonly IDateTimeProvider _dateTimeProviderMock;
 
     public ReserveBookingTests()
     {
@@ -36,8 +35,8 @@ public class ReserveBookingTests
         _bookingRepositoryMock = Substitute.For<IBookingRepository>();
         _unitOfWorkMock = Substitute.For<IUnitOfWork>();
 
-        _dateTimeProviderMock = Substitute.For<IDateTimeProvider>();
-        _dateTimeProviderMock.UtcNow.Returns(UtcNow);
+        var dateTimeProviderMock = Substitute.For<IDateTimeProvider>();
+        dateTimeProviderMock.UtcNow.Returns(UtcNow);
 
         _handler = new ReserveBookingCommandHandler(
             _userRepositoryMock,
@@ -45,7 +44,7 @@ public class ReserveBookingTests
             _bookingRepositoryMock,
             _unitOfWorkMock,
             new PricingService(),
-            _dateTimeProviderMock);
+            dateTimeProviderMock);
     }
 
     [Fact]
