@@ -4,6 +4,7 @@ using Bookify.Application;
 using Bookify.Infrastructure;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Scalar.AspNetCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,13 +39,14 @@ if (app.Environment.IsDevelopment())
     // });
 
     app.MapOpenApi();
+    app.MapScalarApiReference();
     app.ApplyMigrations();
 
     // REMARK: Uncomment if to seed initial data.
     // app.SeedData();
 }
 
-// app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
 app.UseRequestContextLogging();
 

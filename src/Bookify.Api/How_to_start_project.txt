@@ -1,0 +1,13 @@
+Run docker with HTTPS:
+
+1. Clean existing HTTPS certificates
+   dotnet dev-certs https --clean
+   
+2. From your root folder directory create certificate bookify.pfx ih folder 'https' (create folder if it does not exist)
+   dotnet dev-certs https -ep .\https\bookify.pfx -p Password01
+   
+3. Trust newly created certificate
+   dotnet dev-certs https --trust
+   
+4. Run docker-compose up 
+   docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d
